@@ -1,18 +1,18 @@
 #pragma once
 
-#include <iostream>
 #include <windows.h>
+#include <iostream>
 
 class screen_shotter {
 public:
-    screen_shotter(const int xRes, const int yRes) {
+    screen_shotter(const POINT resolution) {
         _ptA.x = 0;
         _ptA.y = 0;
-        _ptB.x = xRes;
-        _ptB.y = yRes;
+        _ptB.x = resolution.x;
+        _ptB.y = resolution.y;
     }
 
-    void screenshot();
+    bool screenshot();
 
     /// Save image to clipboard for testing purposes
     void save_to_clipboard();

@@ -11,5 +11,6 @@ cc_library(
     deps = [
         "//code/pixel_parser",
         "//code/screen_shotter",
+        "//code/screen",
     ],
 )

@@ -4,7 +4,5 @@ cc_library(
     name = "pixel_parser",
     srcs = ["pixel_parser.cpp"],
     hdrs = ["pixel_parser.hpp"],
-    deps = [
-    ],
     includes = ["."],
 )
