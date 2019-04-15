@@ -14,6 +14,7 @@ public:
 
     void screenshot();
 
+    /// Save image to clipboard for testing purposes
     void save_to_clipboard();
 
 private:

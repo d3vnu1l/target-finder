@@ -1,35 +1,48 @@
+#include <windows.h>
 #include <stdio.h>
 #include <iostream>
 #include <thread>
 #include <array>
+#include <io.h>
+#include <fstream>
+#include <fcntl.h>
 
 #include "pixel_parser.hpp"
 #include "screen_shotter.hpp"
-#include <windows.h>
+
 using namespace std;
 
 void main();
 
-INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-    PSTR lpCmdLine, INT nCmdShow)
-{
-    main();
-
-    return 0;
+static void redirect_io(){
+    if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()){
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
 }
 
-void main() {
+static POINT get_resolution() {
+    POINT resolution;
 
+    SetProcessDPIAware();
+    resolution.x = GetSystemMetrics(SM_CXSCREEN);
+    resolution.y = GetSystemMetrics(SM_CYSCREEN);
+
+    return resolution;
+}
+
+void target_finder() {
     const int threads = 1;
-    const int xRes = 1920;
-    const int yRes = 1080;
 
-    cout << "Program Starting...\n";
+    cout << "\nProgram Starting...\n";
 
-    screen_shotter _screen_shotter(xRes, yRes);
+    // Get resolution
+    POINT resolution = get_resolution();
+    cout << "Detected resolution " << resolution.x << "x" << resolution.y << endl;
 
+    screen_shotter _screen_shotter(resolution.x, resolution.y);
     _screen_shotter.screenshot();
-    _screen_shotter.save_to_clipboard();
+    _screen_shotter.save_to_clipboard();    
    
     /*
     std::array<std::unique_ptr<worker>, threads> workers = {
@@ -41,5 +54,18 @@ void main() {
     }
     */
 
-  // start here.
+    // start here.
+    /**
+     * ...
+     */
+
+    cout << endl;
+    system("pause");
+}
+
+INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
+    redirect_io();
+    target_finder();
+
+    return 0;
 }

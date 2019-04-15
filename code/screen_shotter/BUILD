@@ -7,6 +7,7 @@ cc_library(
     deps = [
     ],
     includes = ["."],
-    linkopts = ["/SUBSYSTEM:WINDOWS",
+    linkopts = ["-SUBSYSTEM:WINDOWS",
+                "\gdi32.lib user32.lib",
     ],
 )
