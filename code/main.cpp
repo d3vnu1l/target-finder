@@ -5,12 +5,17 @@
 #include <io.h>
 #include <fstream>
 #include <fcntl.h>
+#include <future>
+#include <csignal>
+#include <mutex>
 
 #include "pixel_parser.hpp"
 #include "screen_shotter.hpp"
 #include "screen.hpp"
 
-static void redirect_io_to_console(){
+using namespace std;
+
+static void redirect_io_to_console() {
     if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()){
         freopen("CONOUT$", "w", stdout);
         freopen("CONOUT$", "w", stderr);
@@ -18,40 +23,67 @@ static void redirect_io_to_console(){
 }
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
-    const size_t threads = 8;
+    const size_t threads = 60;
+    const int fps = 4;
+    const int time_slot_us = ((1000 * 1000)/fps);
+
     redirect_io_to_console();
 
-    std::cout << "\nProgram Starting...\n";
-
-    // Get resolution
+    // Get resolution and configure screenshotter
     screen* _screen = new screen();
-    std::cout << "Detected resolution ";
-    std::cout << _screen->get_x_res() << "x" << _screen->get_y_res() << "\n";
-
+    cout << "Detected resolution ";
+    cout << _screen->get_x_res() << "x" << _screen->get_y_res() << "\n";  
     screen_shotter _screen_shotter(_screen->get_res());
-    if (_screen_shotter.screenshot()) {
-        std::cout << "Screenshot successful!\n";
-    }
-    // _screen_shotter.save_to_clipboard();    
-   
+    int threaded_screen_chunk_pixels = _screen->get_y_res() / threads;
+    cout << "Threaded chunk Y size: " << threaded_screen_chunk_pixels << endl;
+
+    // Create thread result promise
+    promise<POINT> prom;
+    future<POINT> fut = prom.get_future();
+    
     // Create threads
-    std::array<std::unique_ptr<pixel_parser>, threads> workers;
+    array<unique_ptr<pixel_parser>, threads> workers;
     for (int index = 0; index < threads; index++) {
-        workers[index] = std::unique_ptr<pixel_parser>(new pixel_parser(index + 1));
+        workers[index] = unique_ptr<pixel_parser>(new pixel_parser((index + 1), _screen->get_res()));
     }
 
-   for (auto& thread : workers) {
-        thread->init();
+    // Run until ctrl-c
+    static bool continue_running = true;
+    auto sigint_lambda = [](int signal) { continue_running = false; };
+    signal(SIGINT, sigint_lambda);
+    while (continue_running) {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        // Get screenshot
+        if (_screen_shotter.screenshot()) {
+            // Start threads and wait for hit
+            for (auto& thread : workers) { 
+                thread->init(&prom, _screen_shotter.get_screen_bitmap(), 0, threaded_screen_chunk_pixels); 
+            }
+            POINT hit = fut.get();
+
+            // Pause all of the threads
+            for (auto& thread : workers) { thread->request_pause(true); }
+            std::this_thread::sleep_for(std::chrono::microseconds(10));  // TODO: Need to be sure all threads exit
+
+            // Reset promise
+            prom = std::promise<POINT>();
+            fut = prom.get_future();
+
+            cout << hit.x << "x" << hit.y << " ";
+        }
+
+        // Maintain timing
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        int us_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        cout <<  (100.0*us_elapsed/time_slot_us) << "% load\n";
+        if (us_elapsed > time_slot_us) {
+            cout << "Overload!\n";
+        } else {
+            std::this_thread::sleep_for(std::chrono::microseconds(time_slot_us - us_elapsed));
+        }
     }
 
-    // Get screenshot
-    // update threads
-    // wait for hit and pause threads
-    // repeat
-
-    workers[0]->get_thread()->join();
-
-    std::cout << std::endl;
-    system("pause");
+    cout << "Quiting...\n";
     return 0;
 }

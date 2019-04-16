@@ -14,6 +14,8 @@ public:
 
     bool screenshot();
 
+    HDC* get_screen_bitmap() { return &_hDC; }
+
     /// Save image to clipboard for testing purposes
     void save_to_clipboard();
 
