@@ -23,8 +23,8 @@ static void redirect_io_to_console() {
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
     const unsigned threads = 12;  // TODO : cmd line
-    const int fps = 8;            // TODO : cmd line
-    const int granularity = 12;   // TODO : cmd line
+    const int fps = 6;            // TODO : cmd line
+    const int granularity = 10;   // TODO : cmd line
     const int time_slot_us = ((1000 * 1000)/fps);
 
     redirect_io_to_console();
@@ -61,11 +61,11 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nC
                 thread->init(&prom, _screen_shotter.get_screen_bitmap(), granularity); 
             }
             POINT hit = fut.get();
-
+            
             // Pause all of the threads
             for (auto& thread : workers) { thread->request_pause(true); }
             std::this_thread::sleep_for(std::chrono::microseconds(1200));  // TODO: Need to be sure all threads exit
-
+            
             // Reset promise
             prom = std::promise<POINT>();
             fut = prom.get_future();

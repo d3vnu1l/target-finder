@@ -30,7 +30,9 @@ void pixel_parser::do_work() {
         _request_pause = true;
         _hit.x = _seek.y;
         _hit.y = _seek.x;
-        _prom_hit->set_value(_hit); // TODO move this to hit
+
+        // TODO prevent multiple threads using promise at once
+        if (_worker_num == 0) { _prom_hit->set_value(_hit); } // TODO move this to hit
     }
 }
 

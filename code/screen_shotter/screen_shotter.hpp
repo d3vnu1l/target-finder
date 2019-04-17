@@ -14,17 +14,15 @@ public:
 
     bool screenshot();
 
-    HDC* get_screen_bitmap() { return &_hDC; }
+    HDC* get_screen_bitmap() { return &_h_DC; }
 
     /// Save image to clipboard for testing purposes
     void save_to_clipboard();
 
 private:
 
-    HDC _hScreen;
-    HDC _hDC;
-    HBITMAP _hBitMap;
-    HGDIOBJ _oldObj;
+    HDC _h_DC;
+    HBITMAP _h_bit_map;
     POINT _ptA;
     POINT _ptB;
 };
