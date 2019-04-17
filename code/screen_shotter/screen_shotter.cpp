@@ -11,6 +11,7 @@ bool screen_shotter::screenshot() {
     _h_bit_map = CreateCompatibleBitmap(h_screen, abs(_ptB.x-_ptA.x), abs(_ptB.y-_ptA.y));
     HGDIOBJ _oldObj = SelectObject(_h_DC, _h_bit_map);
     success = BitBlt(_h_DC, 0, 0, abs(_ptB.x-_ptA.x), abs(_ptB.y-_ptA.y), h_screen, _ptA.x, _ptA.y, SRCCOPY);
+    // std::cout << GetPixel(_h_DC, 0, 500) << std::endl;    // DEBUG calibration
     
     DeleteObject(_oldObj);
     DeleteDC(h_screen);

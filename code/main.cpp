@@ -22,9 +22,9 @@ static void redirect_io_to_console() {
 }
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
-    const unsigned threads = 12;  // TODO : cmd line
-    const int fps = 6;            // TODO : cmd line
-    const int granularity = 10;   // TODO : cmd line
+    const unsigned threads = 1;  // TODO : cmd line
+    const int fps = 7;            // TODO : cmd line
+    const int granularity = 40;   // TODO : cmd line
     const int time_slot_us = ((1000 * 1000)/fps);
 
     redirect_io_to_console();
@@ -70,7 +70,8 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nC
             prom = std::promise<POINT>();
             fut = prom.get_future();
 
-            cout << hit.x << "x" << hit.y << " ";
+            if (hit.x != 0) { cout << "Spotted: " << hit.x << "x" << hit.y << "    ";}
+            
         }
 
         // Maintain timing

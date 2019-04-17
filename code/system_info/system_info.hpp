@@ -8,7 +8,7 @@ public:
 
     system_info(const unsigned threads_to_use) : _threads_to_use(threads_to_use) {
         _num_threads_supported = std::thread::hardware_concurrency();
-        if (2 > _num_threads_supported) { _num_threads_supported = 2; }
+        if (1 > _num_threads_supported) { _num_threads_supported = 1; }
         
         SetProcessDPIAware();
         _resolution.x = GetSystemMetrics(SM_CXSCREEN);

@@ -22,16 +22,26 @@ void pixel_parser::do_work() {
         _seek.x = 0;    // TODO: stagger
 
         for (; _seek.x < x_res; _seek.x+= _granularity) {
-            (void)GetPixel(*_screen, _seek.x, _seek.y);
+            if(2359525 == GetPixel(*_screen, _seek.x, _seek.y)) {
+                // TODO prevent multiple threads using promise at once
+                _hit.x = _seek.x;
+                _hit.y = _seek.y;
+                //if (_worker_num == 0) { 
+                    _request_pause = true;
+                    _prom_hit->set_value(_hit); 
+                    break; 
+                //} // TODO move this to hit
+            }
+            else {
+                _hit.x = 0;
+                _hit.y = 0;
+            }
         }
         _seek.y+= _granularity;
     } else {
         // Target not found, pause
         _request_pause = true;
-        _hit.x = _seek.y;
-        _hit.y = _seek.x;
 
-        // TODO prevent multiple threads using promise at once
         if (_worker_num == 0) { _prom_hit->set_value(_hit); } // TODO move this to hit
     }
 }
