@@ -7,11 +7,10 @@
 #include <fcntl.h>
 #include <future>
 #include <csignal>
-#include <mutex>
 
 #include "pixel_parser.hpp"
 #include "screen_shotter.hpp"
-#include "screen.hpp"
+#include "system_info.hpp"
 
 using namespace std;
 
@@ -23,28 +22,29 @@ static void redirect_io_to_console() {
 }
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
-    const size_t threads = 60;
-    const int fps = 4;
+    const unsigned threads = 30;  // TODO : cmd line
+    const int fps = 4;            // TODO : cmd line
+    const int granularity = 10;   // TODO : cmd line
     const int time_slot_us = ((1000 * 1000)/fps);
 
     redirect_io_to_console();
 
     // Get resolution and configure screenshotter
-    screen* _screen = new screen();
+    system_info* _system = new system_info(threads);
     cout << "Detected resolution ";
-    cout << _screen->get_x_res() << "x" << _screen->get_y_res() << "\n";  
-    screen_shotter _screen_shotter(_screen->get_res());
-    int threaded_screen_chunk_pixels = _screen->get_y_res() / threads;
-    cout << "Threaded chunk Y size: " << threaded_screen_chunk_pixels << endl;
+    cout << _system->get_x_res() << "x" << _system->get_y_res() << "\n";  
+    screen_shotter _screen_shotter(_system->get_res());
+    int chunk_size = _system->get_y_res() / threads;
+    cout << "Threaded chunk Y size: " << chunk_size << endl;
 
     // Create thread result promise
     promise<POINT> prom;
     future<POINT> fut = prom.get_future();
     
     // Create threads
-    array<unique_ptr<pixel_parser>, threads> workers;
+    array<unique_ptr<pixel_parser>, threads > workers;
     for (int index = 0; index < threads; index++) {
-        workers[index] = unique_ptr<pixel_parser>(new pixel_parser((index + 1), _screen->get_res()));
+        workers[index] = unique_ptr<pixel_parser>(new pixel_parser(index, _system));
     }
 
     // Run until ctrl-c
@@ -58,13 +58,13 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nC
         if (_screen_shotter.screenshot()) {
             // Start threads and wait for hit
             for (auto& thread : workers) { 
-                thread->init(&prom, _screen_shotter.get_screen_bitmap(), 0, threaded_screen_chunk_pixels); 
+                thread->init(&prom, _screen_shotter.get_screen_bitmap(), granularity); 
             }
             POINT hit = fut.get();
 
             // Pause all of the threads
             for (auto& thread : workers) { thread->request_pause(true); }
-            std::this_thread::sleep_for(std::chrono::microseconds(10));  // TODO: Need to be sure all threads exit
+            std::this_thread::sleep_for(std::chrono::microseconds(200));  // TODO: Need to be sure all threads exit
 
             // Reset promise
             prom = std::promise<POINT>();

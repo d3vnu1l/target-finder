@@ -3,20 +3,23 @@
 
 #include "pixel_parser.hpp"
 
-void pixel_parser::init(std::promise<POINT>* prom_hit, HDC* screen, int start_y, int end_y) { 
+void pixel_parser::init(std::promise<POINT>* prom_hit, HDC* screen, int granularity) { 
+    const long chunk_size = (_system->get_y_res() / _system->get_threads_count());
+    _seek.y = (_worker_num  * chunk_size);
+    _end_y = _seek.y + chunk_size;
+
+    _granularity = granularity;
     _screen = screen;
     _prom_hit = prom_hit;
-    _seek.y = start_y;
-    _end_y = end_y;
     _request_pause = false;
 } 
 
 // TODO: optimize
 void pixel_parser::do_work() { 
-    const int increment_x = 10;  // Check every x pixels
+    const long x_res = _system->get_x_res();
 
     if (_seek.y < _end_y) {
-        for (_seek.x = 0; _seek.x < _resolution.x; _seek.x+=increment_x) {
+        for (_seek.x = 0; _seek.x < x_res; _seek.x+= _granularity) {
             (void)GetPixel(*_screen, _seek.x, _seek.y);
         }
         _seek.y++;
@@ -33,6 +36,6 @@ void pixel_parser::parser_main() {
         while(!_request_pause) {
             do_work();
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 }

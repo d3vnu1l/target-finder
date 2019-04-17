@@ -5,14 +5,17 @@
 #include <future>
 #include <mutex>
 
+#include "system_info.hpp"
+
 class pixel_parser {
 public:
-    pixel_parser(const int worker_num, const POINT resolution) : _worker_num(worker_num), _resolution(resolution) { 
+    pixel_parser(const int worker_num, system_info* sys_info) : _worker_num(worker_num) { 
+        _system = sys_info;
         _request_pause = true;
         _thread = std::thread(&pixel_parser::parser_main, this); 
     }
 
-    void init(std::promise<POINT>* prom_hit, HDC *screen, int start_y, int end_y);
+    void init(std::promise<POINT>* prom_hit, HDC *screen, int granularity);
 
     void request_pause(volatile bool request_pause) { _request_pause = request_pause; }
 
@@ -24,15 +27,15 @@ public:
 
 private:
     int _worker_num;
-    POINT _resolution;
-
-    void parser_main();
-
-    HDC* _screen;
+    int _granularity;
+    volatile bool _request_pause;
+    long  _end_y;
     POINT _hit;
     POINT _seek;
-    long  _end_y;
+    
+    system_info* _system;
+    HDC* _screen;  
     std::promise<POINT>* _prom_hit;
-    volatile bool _request_pause;
     std::thread _thread;
+    void parser_main();
 };

@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "screen",
-    hdrs = ["screen.hpp"],
+    name = "system_info",
+    hdrs = ["system_info.hpp"],
     includes = ["."],
 )

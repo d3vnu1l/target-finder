@@ -5,4 +5,5 @@ cc_library(
     srcs = ["pixel_parser.cpp"],
     hdrs = ["pixel_parser.hpp"],
     includes = ["."],
+    deps = ["//code/system_info"],
 )
