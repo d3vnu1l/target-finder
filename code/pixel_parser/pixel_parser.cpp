@@ -17,17 +17,20 @@ void pixel_parser::init(std::promise<POINT>* prom_hit, HDC* screen, int granular
 // TODO: optimize
 void pixel_parser::do_work() { 
     const long x_res = _system->get_x_res();
-
+   
     if (_seek.y < _end_y) {
-        for (_seek.x = 0; _seek.x < x_res; _seek.x+= _granularity) {
+        _seek.x = 0;    // TODO: stagger
+
+        for (; _seek.x < x_res; _seek.x+= _granularity) {
             (void)GetPixel(*_screen, _seek.x, _seek.y);
         }
-        _seek.y++;
+        _seek.y+= _granularity;
     } else {
+        // Target not found, pause
         _request_pause = true;
         _hit.x = _seek.y;
         _hit.y = _seek.x;
-        _prom_hit->set_value(_hit);
+        _prom_hit->set_value(_hit); // TODO move this to hit
     }
 }
 
@@ -36,6 +39,6 @@ void pixel_parser::parser_main() {
         while(!_request_pause) {
             do_work();
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
 }
