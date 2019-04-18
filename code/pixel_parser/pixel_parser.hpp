@@ -9,7 +9,7 @@
 
 class pixel_parser {
 public:
-    pixel_parser(const int worker_num, system_info* sys_info) : _worker_num(worker_num) { 
+    pixel_parser(int worker_num, system_info* sys_info) : _worker_num(worker_num) { 
         _system = sys_info;
         _request_pause = true;
         _thread = std::thread(&pixel_parser::parser_main, this); 

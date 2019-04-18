@@ -48,7 +48,7 @@ void pixel_parser::parser_main() {
                 case search_status::FAIL:
                     _request_pause = true;
                 case search_status::SEARCHING:
-                    ;
+                    break;
             }
         }
 
