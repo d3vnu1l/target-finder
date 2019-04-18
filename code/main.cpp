@@ -18,7 +18,7 @@ static void redirect_io_to_console() {
 }
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow) {
-    const unsigned threads = 1;  // TODO : cmd line
+    const unsigned threads = 1;   // TODO : cmd line
     const int fps = 2;            // TODO : cmd line
     const int granularity = 20;   // TODO : cmd line
     const long time_slot_us = ((1000 * 1000)/fps);
