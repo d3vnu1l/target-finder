@@ -9,7 +9,7 @@
 #include "pixel_parser.hpp"
 #include "system_info.hpp"
 
-const unsigned max_threads = 1;
+const unsigned max_threads = 12;
 
 class target_finder {
 public:
@@ -31,10 +31,9 @@ private:
     const unsigned _threads; 
     const int _granularity;
     POINT _hit;
-    
+
     std::array<std::unique_ptr<pixel_parser>, max_threads> _workers;
     screen_shotter* _screen_shotter;
     system_info* _system;
-
-    
+    bool wait_for_match(std::promise<POINT>* prom, std::future<POINT>* fut);
 };
