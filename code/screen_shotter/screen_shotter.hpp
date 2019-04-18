@@ -5,11 +5,8 @@
 
 class screen_shotter {
 public:
-    screen_shotter(const POINT resolution) {
-        _ptA.x = 0;
-        _ptA.y = 0;
-        _ptB.x = resolution.x;
-        _ptB.y = resolution.y;
+    screen_shotter(const POINT resolution) : _ptB(resolution) {
+        _ptA.x = _ptA.y = 0;
     }
 
     bool screenshot();
@@ -20,9 +17,8 @@ public:
     void save_to_clipboard();
 
 private:
-
+    POINT _ptB;
+    POINT _ptA;
     HDC _h_DC;
     HBITMAP _h_bit_map;
-    POINT _ptA;
-    POINT _ptB;
 };

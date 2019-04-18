@@ -9,9 +9,7 @@
 
 class pixel_parser {
 public:
-    pixel_parser(int worker_num, system_info* sys_info) : _worker_num(worker_num) { 
-        _system = sys_info;
-        _request_pause = true;
+    pixel_parser(int worker_num, system_info* sys_info) : _worker_num(worker_num), _system(sys_info) { 
         _thread = std::thread(&pixel_parser::parser_main, this); 
     }
 
@@ -27,17 +25,16 @@ public:
 
     std::thread* get_thread() { return &_thread; }
 
-    //void set_worker_num(const int worker_num) { _worker_num = worker_num; }
-
 private:
     int _worker_num;
+    system_info* _system;
     int _granularity;
-    volatile bool _request_pause;
+    volatile bool _request_pause = true;
     long  _end_y;
     POINT _hit;
     POINT _seek;
     
-    system_info* _system;
+   
     HDC* _screen;  
     std::promise<POINT>* _prom_hit;
     std::thread _thread;

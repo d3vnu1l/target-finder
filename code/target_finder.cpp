@@ -26,7 +26,6 @@ bool target_finder::wait_for_match(std::promise<POINT>* prom, std::future<POINT>
 }
 
 POINT target_finder::find_target() {
-    // Take screenshot
     _screen_shotter->screenshot();
     
     // Create thread result future

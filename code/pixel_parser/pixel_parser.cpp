@@ -27,9 +27,6 @@ pixel_parser::search_status pixel_parser::search() {
                 _hit.y = _seek.y;
                 return search_status::PASS;
             }
-            else {
-                _hit.x = -1;
-            }
         }
         _seek.y+= _granularity;
     } else {
