@@ -15,7 +15,7 @@ void pixel_parser::init(std::promise<POINT>* prom_hit, HDC* screen, int granular
 } 
 
 // TODO: optimize
-void pixel_parser::do_work() { 
+pixel_parser::search_status pixel_parser::search() { 
     const long x_res = _system->get_x_res();
    
     if (_seek.y < _end_y) {
@@ -23,34 +23,35 @@ void pixel_parser::do_work() {
 
         for (; _seek.x < x_res; _seek.x+= _granularity) {
             if(2359525 == GetPixel(*_screen, _seek.x, _seek.y)) {
-                // TODO prevent multiple threads using promise at once
                 _hit.x = _seek.x;
                 _hit.y = _seek.y;
-                //if (_worker_num == 0) { 
-                    _request_pause = true;
-                    _prom_hit->set_value(_hit); 
-                    break; 
-                //} // TODO move this to hit
+                return search_status::PASS;
             }
             else {
-                _hit.x = 0;
-                _hit.y = 0;
+                _hit.x = -1;
             }
         }
         _seek.y+= _granularity;
     } else {
-        // Target not found, pause
-        _request_pause = true;
-
-        if (_worker_num == 0) { _prom_hit->set_value(_hit); } // TODO move this to hit
+        return search_status::FAIL;
     }
+
+    return search_status::SEARCHING;
 }
 
 void pixel_parser::parser_main() {
     while (true) {
         while(!_request_pause) {
-            do_work();
+            switch(search()){
+                case search_status::PASS:
+                    _prom_hit->set_value(_hit);
+                case search_status::FAIL:
+                    _request_pause = true;
+                case search_status::SEARCHING:
+                    ;
+            }
         }
+
         std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
 }

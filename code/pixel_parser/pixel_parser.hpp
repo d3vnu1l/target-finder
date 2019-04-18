@@ -15,11 +15,15 @@ public:
         _thread = std::thread(&pixel_parser::parser_main, this); 
     }
 
+    enum class search_status{ FAIL, SEARCHING, PASS };
+
     void init(std::promise<POINT>* prom_hit, HDC *screen, int granularity);
 
     void request_pause(volatile bool request_pause) { _request_pause = request_pause; }
+ 
+    search_status search(); 
 
-    void do_work(); 
+    bool is_paused() { return _request_pause; }
 
     std::thread* get_thread() { return &_thread; }
 
