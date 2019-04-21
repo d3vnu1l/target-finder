@@ -10,16 +10,16 @@ void target_finder::status_screenshot_device() {
 }
 
 bool target_finder::wait_for_match(std::promise<POINT>* prom, std::future<POINT>* fut) {
-    while( true ) {
+    while ( true ) {
         bool scan = true;
-        for(int i = 0; i < _threads; i++) {
-            scan &=  _workers[i]->is_paused();
-            if (std::future_status::ready == fut->wait_for(std::chrono::microseconds(10))) {
+        for (auto& thread : _workers) {
+            scan &=  thread->is_paused();
+            if (std::future_status::ready == fut->wait_for(std::chrono::microseconds(0))) {
                 return true;
             }
         }
 
-        if ( scan &&  (std::future_status::ready != fut->wait_for(std::chrono::microseconds(0)))) { 
+        if ( scan && (std::future_status::ready != fut->wait_for(std::chrono::microseconds(0)))) { 
             return false;
         }
     }
@@ -33,8 +33,8 @@ POINT target_finder::find_target() {
     std::future<POINT> fut = prom.get_future();
 
     // Start threads and wait for hit
-    for (int index = 0; index < _threads; index++) { 
-        _workers[index]->init(&prom, _screen_shotter->get_screen_bitmap(), _granularity); 
+    for (auto& thread : _workers) { 
+        thread->init(&prom, _screen_shotter->get_screen_bitmap(), _granularity); 
     }
     if ( wait_for_match(&prom, &fut) ) {
         for (auto& thread : _workers) { thread->request_pause(true); }

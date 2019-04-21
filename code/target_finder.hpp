@@ -3,13 +3,11 @@
 #include <windows.h>
 #include <future>
 #include <memory>
-#include <array>
+#include <vector>
 
 #include "screen_shotter.hpp"
 #include "pixel_parser.hpp"
 #include "system_info.hpp"
-
-const unsigned max_threads = 12;
 
 class target_finder {
 public:
@@ -19,7 +17,7 @@ public:
         _system = new system_info(_threads);
         _screen_shotter = new screen_shotter(_system->get_res());
         for (int index = 0; index < _threads; index++) {
-            _workers[index] = std::unique_ptr<pixel_parser>(new pixel_parser(index, _system));
+            _workers.push_back(std::unique_ptr<pixel_parser>(new pixel_parser(index, _system)));
         }
     }
 
@@ -32,7 +30,7 @@ private:
     const int _granularity;
     POINT _hit;
 
-    std::array<std::unique_ptr<pixel_parser>, max_threads> _workers;
+    std::vector<std::unique_ptr<pixel_parser>> _workers;
     screen_shotter* _screen_shotter;
     system_info* _system;
     bool wait_for_match(std::promise<POINT>* prom, std::future<POINT>* fut);
