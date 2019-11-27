@@ -1,10 +1,10 @@
 cc_binary (
-    name = "code_exe",
-    deps = [":code"],
+    name = "code",
+    deps = [":main"],
 )
 
 cc_library(
-    name = "code",
+    name = "main",
     srcs = ["main.cpp"],
     deps = [
         ":target_finder"
